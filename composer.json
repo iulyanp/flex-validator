@@ -1,0 +1,40 @@
+{
+  "name": "iulyanp/flex-validator",
+  "type": "library",
+  "description": "A small validator based on Respect Validation library",
+  "keywords": ["flex validator", "validation", "respect validation", "validator"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Iulian Popa",
+      "email": "iulyanpopa@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^7.0",
+    "respect/validation": "^1.1",
+    "symfony/options-resolver": "^3.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.5",
+    "symfony/var-dumper": "^4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Iulyanp\\": "src"
+    },
+    "files": [
+      "helpers/helpers.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Iulyanp\\Tests\\": "tests"
+    }
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "prefer-stable": true,
+  "minimum-stability": "dev"
+}
