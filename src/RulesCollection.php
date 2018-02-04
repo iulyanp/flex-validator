@@ -21,7 +21,7 @@ class RulesCollection
      * @param string $key
      * @param string $group
      */
-    public function __construct($rules, string $key, string $group = '')
+    public function __construct($rules, string $key = null, string $group = null)
     {
         $this->key = $key;
         $this->group = $group;

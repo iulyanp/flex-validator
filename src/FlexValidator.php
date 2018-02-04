@@ -5,6 +5,7 @@ namespace Iulyanp;
 
 use Respect\Validation\Rules\AllOf;
 use Respect\Validation\Exceptions\NestedValidationException;
+use Respect\Validation\Rules\Optional;
 
 class FlexValidator
 {
@@ -67,7 +68,7 @@ class FlexValidator
      *
      * @return array
      */
-    public function validate($input, array $rules, string $group = '', array $globalMessages = [])
+    public function validate($input, array $rules, string $group = null, array $globalMessages = [])
     {
         if (\is_array($input)) {
             return $this->validateArray($input, $rules, $group, $globalMessages);
@@ -84,9 +85,9 @@ class FlexValidator
      *
      * @return mixed
      */
-    public function validateSingleValue($input, array $rules, string $group = '', array $messages = [])
+    public function validateSingleValue($input, array $rules, string $group = null, array $messages = [])
     {
-        $rulesCollection = new RulesCollection($rules, '', $group);
+        $rulesCollection = new RulesCollection($rules, null, $group);
 
         $this->validateInput($input, $rulesCollection, $messages);
 
@@ -109,7 +110,7 @@ class FlexValidator
      *
      * @return array
      */
-    public function validateArray(array $array, array $rules, string $group = '', array $globalMessages = [])
+    public function validateArray(array $array, array $rules, string $group = null, array $globalMessages = [])
     {
         foreach ($rules as $key => $ruleCollection) {
             $ruleSet = new RulesCollection($ruleCollection, $key, $group);
@@ -127,7 +128,7 @@ class FlexValidator
      *
      * @return mixed
      */
-    public function getValue(string $key = '')
+    public function getValue(string $key = null)
     {
         return array_get($this->values, $key);
     }
@@ -169,7 +170,8 @@ class FlexValidator
      */
     public function getError(string $key): string
     {
-        $error = array_get($this->errors, $key, '');
+        $error = array_get($this->errors, $key);
+
         if (is_array($error)) {
             return reset($error);
         }
@@ -184,7 +186,7 @@ class FlexValidator
      *
      * @return $this
      */
-    private function setValue($value, string $key, string $group = '')
+    private function setValue($value, string $key = null, string $group = null)
     {
         if (!empty($group) && !empty($key)) {
             array_set($this->values, sprintf('%s.%s', $group, $key), $value);
@@ -246,6 +248,10 @@ class FlexValidator
     {
         $ruleNames = [];
         foreach ($rules->getRules() as $rule) {
+            if ($rule instanceof Optional) {
+                $ruleNames = $this->getRulesNames($rule->getValidatable());
+            }
+
             $ruleDef = new \ReflectionClass($rule);
             $ruleNames[] = lcfirst($ruleDef->getShortName());
         }
@@ -287,7 +293,7 @@ class FlexValidator
      * @param string $key
      * @param string $group
      */
-    private function setErrors(array $errors, string $key, string $group = '')
+    private function setErrors(array $errors, string $key = null, string $group = null)
     {
         if (!$this->dotErrorKeys) {
             $this->setErrorsWithNestedKeys($errors, $key, $group);
@@ -303,7 +309,7 @@ class FlexValidator
      * @param string $key
      * @param string $group
      */
-    private function setErrorsWithDotKeys(array $errors, string $key, string $group = '')
+    private function setErrorsWithDotKeys(array $errors, string $key = null, string $group = null)
     {
         if (!empty($group) && !empty($key)) {
             $this->errors[sprintf('%s.%s', $group, $key)] = $errors;
@@ -331,7 +337,7 @@ class FlexValidator
      * @param string $key
      * @param string $group
      */
-    private function setErrorsWithNestedKeys(array $errors, string $key, string $group = '')
+    private function setErrorsWithNestedKeys(array $errors, string $key = null, string $group = null)
     {
         if (!empty($group) && !empty($key)) {
             array_set($this->errors, sprintf('%s.%s', $group, $key), $errors);
