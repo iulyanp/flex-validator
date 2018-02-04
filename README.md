@@ -1,6 +1,12 @@
 Flex Validator
 ----
 
+[![Latest Stable Version](https://poser.pugx.org/iulyanp/flex-validator/version)](https://packagist.org/packages/iulyanp/flex-validator)
+[![Total Downloads](https://poser.pugx.org/iulyanp/flex-validator/downloads)](https://packagist.org/packages/iulyanp/flex-validator)
+[![Latest Unstable Version](https://poser.pugx.org/iulyanp/flex-validator/v/unstable)](//packagist.org/packages/iulyanp/flex-validator)
+[![License](https://poser.pugx.org/iulyanp/flex-validator/license)](https://packagist.org/packages/iulyanp/flex-validator)
+[![composer.lock available](https://poser.pugx.org/iulyanp/flex-validator/composerlock)](https://packagist.org/packages/iulyanp/flex-validator)
+
 A simple validator based on [Respect Validation](https://github.com/Respect/Validation) library, that provides an
 easy way to customize the error messages.
 
