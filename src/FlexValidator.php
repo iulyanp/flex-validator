@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Iulyanp;
 
+use Respect\Validation\Rules\AbstractComposite;
+use Respect\Validation\Rules\AbstractWrapper;
 use Respect\Validation\Rules\AllOf;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Rules\Optional;
@@ -244,19 +246,22 @@ class FlexValidator
      *
      * @return array
      */
-    private function getRulesNames(AllOf $rules): array
+    private function getRulesNames(AbstractComposite $rules): array
     {
-        $ruleNames = [];
+        $allRuleNames = [];
         foreach ($rules->getRules() as $rule) {
-            if ($rule instanceof Optional) {
-                $ruleNames = $this->getRulesNames($rule->getValidatable());
+            $ruleNames = [];
+            if ($rule instanceof AbstractComposite) {
+                $ruleNames = $this->getRulesNames(new AllOf($rule->getRules()));
+            } elseif ($rule instanceof AbstractWrapper) {
+                $ruleNames = $this->getRulesNames(new AllOf($rule->getValidatable()->getRules()));
             }
-
+            $allRuleNames = array_merge($allRuleNames, $ruleNames);
             $ruleDef = new \ReflectionClass($rule);
-            $ruleNames[] = lcfirst($ruleDef->getShortName());
+            $allRuleNames[] = lcfirst($ruleDef->getShortName());
         }
 
-        return $ruleNames;
+        return $allRuleNames;
     }
 
     /**

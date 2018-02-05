@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Iulyanp;
 
+use Respect\Validation\Rules\AbstractComposite;
 use Respect\Validation\Rules\AllOf;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -17,7 +18,7 @@ class RulesCollection
     /**
      * RulesCollection constructor.
      *
-     * @param        $rules
+     * @param mixed  $rules
      * @param string $key
      * @param string $group
      */
@@ -76,7 +77,7 @@ class RulesCollection
      */
     private function setRules($rules)
     {
-        if ($rules instanceof AllOf) {
+        if ($rules instanceof AbstractComposite) {
             $this->rules = $rules;
 
             return $this;
@@ -91,48 +92,13 @@ class RulesCollection
                 )
             );
         }
-
-        $this->setArrayRules($rules);
+        $this->rules = new AllOf($rules);
 
         $this->checkRules();
 
         return $this;
     }
 
-    /**
-     * @param array $rules
-     */
-    private function setArrayRules(array $rules)
-    {
-        $rules = $this->mergeWithDefaultRules($rules);
-
-        foreach ($rules as $key => $value) {
-            if (\in_array($key, self::OPTIONS, true) && !empty($value)) {
-                $this->$key = $value;
-            }
-        }
-    }
-
-    /**
-     * @param $rules
-     *
-     * @return array
-     */
-    private function mergeWithDefaultRules(array $rules): array
-    {
-        $resolver = new OptionsResolver();
-        $resolver->setRequired('rules');
-        $resolver->setDefaults(
-            [
-                'messages' => [],
-                'group' => '',
-            ]
-        );
-        $resolver->setAllowedTypes('messages', 'array');
-        $resolver->setAllowedTypes('group', 'string');
-
-        return $resolver->resolve($rules);
-    }
 
     /**
      * Verifies that rules are set and valid.
@@ -141,7 +107,7 @@ class RulesCollection
      */
     private function checkRules()
     {
-        if (!$this->rules instanceof AllOf) {
+        if (!$this->rules instanceof AbstractComposite) {
             throw new \InvalidArgumentException(
                 sprintf(
                     'Validation rules are missing or invalid on `%s` key. Use only Respect Validation rules.',
