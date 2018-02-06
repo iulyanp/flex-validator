@@ -13,8 +13,11 @@ class RulesCollection
     private $rules;
     private $messages;
     private $group;
-    const OPTIONS = ['rules', 'messages', 'group'];
-    const OPTION_RULES = 'rules';
+    const RULES_CONFIG = 'rules';
+    const MESSAGES_CONFIG = 'messages';
+    const GROUP_CONFIG = 'group';
+    const CONFIG = [self::RULES_CONFIG, self::MESSAGES_CONFIG, self::GROUP_CONFIG];
+
 
     /**
      * RulesCollection constructor.
@@ -89,11 +92,11 @@ class RulesCollection
                 sprintf(
                     'For %s key use only Respect Validation rules or an array with options: %s.',
                     $this->getKey(),
-                    implode(', ', self::OPTIONS)
+                    implode(', ', self::CONFIG)
                 )
             );
         }
-        $this->setArrayRules($rules);
+        $this->setRulesConfig($rules);
 
         $this->checkRules();
 
@@ -104,22 +107,31 @@ class RulesCollection
     /**
      * @param array $rules
      */
-    private function setArrayRules(array $rules)
+    private function setRulesConfig(array $rulesConfig)
     {
-        $rules = $this->mergeWithDefaultRules($rules);
+        $rulesConfig = $this->mergeWithDefaultRules($rulesConfig);
 
-        foreach ($rules as $key => $value) {
-            if (\in_array($key, self::OPTIONS, true) && !empty($value)) {
-                switch($key) {
-                    case self::OPTION_RULES:
-                        $this->$key = new AllOf($value);
-                        break;
-                    default:
-                        $this->$key = $value;
-                        break;
-                }
+        foreach ($rulesConfig as $configType => $configValue) {
+            if (\in_array($configType, self::CONFIG, true) && !empty($configValue)) {
+                $this->setRulesConfigType($configType, $configValue);
             }
         }
+    }
+
+    /**
+     * Sets config in current rulles collection
+     *
+     * @param string $configType
+     * @param mixed  $configValue
+     */
+    private function setRulesConfigType(string $configType, $configValue)
+    {
+        if ($configType == self::RULES_CONFIG) {
+            $this->$configType = new AllOf($configValue);
+            return;
+        }
+
+        $this->$configType = $configValue;
     }
 
     /**
@@ -130,15 +142,15 @@ class RulesCollection
     private function mergeWithDefaultRules(array $rules): array
     {
         $resolver = new OptionsResolver();
-        $resolver->setRequired('rules');
+        $resolver->setRequired(self::RULES_CONFIG);
         $resolver->setDefaults(
             [
-                'messages' => [],
-                'group' => '',
+                self::MESSAGES_CONFIG => [],
+                self::GROUP_CONFIG => '',
             ]
         );
-        $resolver->setAllowedTypes('messages', 'array');
-        $resolver->setAllowedTypes('group', 'string');
+        $resolver->setAllowedTypes(self::MESSAGES_CONFIG, 'array');
+        $resolver->setAllowedTypes(self::GROUP_CONFIG, 'string');
 
         return $resolver->resolve($rules);
     }
