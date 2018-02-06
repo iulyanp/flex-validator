@@ -14,6 +14,7 @@ class RulesCollection
     private $messages;
     private $group;
     const OPTIONS = ['rules', 'messages', 'group'];
+    const OPTION_RULES = 'rules';
 
     /**
      * RulesCollection constructor.
@@ -92,13 +93,55 @@ class RulesCollection
                 )
             );
         }
-        $this->rules = new AllOf($rules);
+        $this->setArrayRules($rules);
 
         $this->checkRules();
 
         return $this;
     }
 
+
+    /**
+     * @param array $rules
+     */
+    private function setArrayRules(array $rules)
+    {
+        $rules = $this->mergeWithDefaultRules($rules);
+
+        foreach ($rules as $key => $value) {
+            if (\in_array($key, self::OPTIONS, true) && !empty($value)) {
+                switch($key) {
+                    case self::OPTION_RULES:
+                        $this->$key = new AllOf($value);
+                        break;
+                    default:
+                        $this->$key = $value;
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param $rules
+     *
+     * @return array
+     */
+    private function mergeWithDefaultRules(array $rules): array
+    {
+        $resolver = new OptionsResolver();
+        $resolver->setRequired('rules');
+        $resolver->setDefaults(
+            [
+                'messages' => [],
+                'group' => '',
+            ]
+        );
+        $resolver->setAllowedTypes('messages', 'array');
+        $resolver->setAllowedTypes('group', 'string');
+
+        return $resolver->resolve($rules);
+    }
 
     /**
      * Verifies that rules are set and valid.
