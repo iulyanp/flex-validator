@@ -253,8 +253,12 @@ class FlexValidator
             $ruleNames = [];
             if ($rule instanceof AbstractComposite) {
                 $ruleNames = $this->getRulesNames(new AllOf($rule->getRules()));
+                $allRuleNames = array_merge($allRuleNames, $ruleNames);
+                continue;
             } elseif ($rule instanceof AbstractWrapper) {
                 $ruleNames = $this->getRulesNames(new AllOf($rule->getValidatable()->getRules()));
+                $allRuleNames = array_merge($allRuleNames, $ruleNames);
+                continue;
             }
             $allRuleNames = array_merge($allRuleNames, $ruleNames);
             $ruleDef = new \ReflectionClass($rule);
