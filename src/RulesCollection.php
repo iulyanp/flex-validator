@@ -105,7 +105,10 @@ class RulesCollection
 
 
     /**
-     * @param array $rules
+     *
+     * @param array $rulesConfig
+     *
+     * @return void
      */
     private function setRulesConfig(array $rulesConfig)
     {
