@@ -242,33 +242,24 @@ class FlexValidator
     }
 
     /**
-     * @param AllOf $rules
+     * Returns all rule names which were failed
+     *
+     * @param NestedValidationException $exception
      *
      * @return array
      */
-    private function getRulesNames(AbstractComposite $rules): array
+    private function getFailedRulesNames(NestedValidationException $exception): array
     {
-        $allRuleNames = [];
-        foreach ($rules->getRules() as $rule) {
-            $ruleNames = [];
-            $abstractRules = null;
-            if ($rule instanceof AbstractComposite) {
-                $abstractRules = new AllOf($rule->getRules());
-            } elseif ($rule instanceof AbstractWrapper) {
-                $abstractRules = new AllOf($rule->getValidatable()->getRules());
-            }
-            if ($abstractRules instanceof AllOf) {
-                $ruleNames = $this->getRulesNames($abstractRules);
-                $allRuleNames = array_merge($allRuleNames, $ruleNames);
+        $rulesNames = [];
+        foreach ($exception->getIterator() as $nestedException) {
+            $exceptionId = $nestedException->getId();
+            if (in_array($exceptionId, $rulesNames)) {
                 continue;
             }
+            $rulesNames[] = $exceptionId;
+      }
 
-            $allRuleNames = array_merge($allRuleNames, $ruleNames);
-            $ruleDef = new \ReflectionClass($rule);
-            $allRuleNames[] = lcfirst($ruleDef->getShortName());
-        }
-
-        return $allRuleNames;
+        return $rulesNames;
     }
 
     /**
@@ -282,9 +273,8 @@ class FlexValidator
         array $globalMessages = []
     ) {
         $errors = [
-            $exception->findMessages($this->getRulesNames($ruleSet->getValidationRules())),
+            $exception->findMessages($this->getFailedRulesNames($exception)),
         ];
-
         if (!empty($this->defaultMessages)) {
             $errors[] = $exception->findMessages($this->defaultMessages);
         }
@@ -372,3 +362,4 @@ class FlexValidator
         array_set($this->errors, $key, $errors);
     }
 }
+
