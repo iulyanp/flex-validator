@@ -365,8 +365,8 @@ class FlexValidatorTest extends TestCase
                 'rules' => v::notBlank()->numeric(),
             ],
             'contact.address.number' => [
-                'rules' => v::notBlank()->numeric()->length(4)
-            ]
+                'rules' => v::notBlank()->numeric()->length(4),
+            ],
         ];
 
         $this->validator->useDotErrorKeys();
@@ -377,12 +377,11 @@ class FlexValidatorTest extends TestCase
         $this->assertArrayHasKey('notBlank', $this->validator->getErrors('global.contact.phone'));
     }
 
-
     /**
-     * Tests the case when abstract composite rule is used, for example: "OneOf" which is using a group of rules
+     * Tests the case when abstract composite rule is used,
+     * for example: "OneOf" which is using a group of rules
      *
      * @test
-     * @return void
      */
     public function validatorUseAbstractComposite()
     {
@@ -391,24 +390,29 @@ class FlexValidatorTest extends TestCase
                 'rules' => v::oneOf(v::numeric(), v::length(0, 2)),
                 'messages' => [
                     'numeric' => 'Test message',
-                    'length' => 'Test message2'
-                ]
+                    'length' => 'Test message2',
+                ],
             ],
-            'contact.phone' => v::oneOf(v::numeric())
+            'contact.phone' => [
+                'rules' => v::oneOf(v::numeric(), v::length(4, 9)),
+                'messages' => [
+                    'numeric' => 'Numeric message',
+                ],
+            ],
         ];
-        $this->validator->useDotErrorKeys();
+
         $this->validator->validate($this->getData(), $rules);
-        $this->assertEquals('Test message', $this->validator->getErrors()['name']['numeric']);
-        $this->assertEquals('Test message2', $this->validator->getErrors()['name']['length']);
-        $this->assertEquals('"" must be numeric', $this->validator->getErrors()['contact.phone']['numeric']);
+
+        $this->assertEquals('Numeric message', $this->validator->getError('contact.phone.numeric'));
+        $this->assertEquals('Test message', $this->validator->getError('name.numeric'));
+        $this->assertEquals('Test message2', $this->validator->getError('name.length'));
     }
 
-
     /**
-     * Tests the case when AbstractWrapper validator is used, for example the "Optional" one
+     * Tests the case when AbstractWrapper validator is used,
+     * for example the "Optional" one
      *
      * @test
-     * @return void
      */
     public function validatorUseAbstractWrapper()
     {
@@ -416,15 +420,38 @@ class FlexValidatorTest extends TestCase
             'name' => [
                 'rules' => v::optional(v::numeric()),
                 'messages' => [
-                    'numeric' => 'Test overwrite abstract wrapper message'
-                ]
-            ]
+                    'numeric' => 'Test overwrite abstract wrapper message',
+                ],
+            ],
         ];
 
         $this->validator->validate($this->getData(), $rules);
         $this->assertEquals(
             'Test overwrite abstract wrapper message',
-            $this->validator->getErrors()['name']['numeric']
+            $this->validator->getError('name.numeric')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function validateWithSameRuleMultipleTimes()
+    {
+        $data = [
+            'username' => 'iulian.popa',
+        ];
+
+        $rules = [
+            'username' => [
+                'rules' => v::alpha('_')->alpha(','),
+            ],
+        ];
+
+        $this->validator->validate($data, $rules);
+
+        $this->assertEquals(
+            '"iulian.popa" must contain only letters (a-z) and ""_""',
+            $this->validator->getError('username.alpha')
         );
     }
 
