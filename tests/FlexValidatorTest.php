@@ -443,7 +443,7 @@ class FlexValidatorTest extends TestCase
 
         $rules = [
             'username' => [
-                'rules' => v::alpha('_')->alpha(','),
+                'rules' => v::allOf(v::alpha('_'), v::alpha(',')),
             ],
         ];
 
