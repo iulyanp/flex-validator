@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Iulyanp;
 
+use Respect\Validation\Rules\AbstractComposite;
 use Respect\Validation\Rules\AllOf;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -12,12 +13,16 @@ class RulesCollection
     private $rules;
     private $messages;
     private $group;
-    const OPTIONS = ['rules', 'messages', 'group'];
+    const RULES_CONFIG = 'rules';
+    const MESSAGES_CONFIG = 'messages';
+    const GROUP_CONFIG = 'group';
+    const CONFIG = [self::RULES_CONFIG, self::MESSAGES_CONFIG, self::GROUP_CONFIG];
+
 
     /**
      * RulesCollection constructor.
      *
-     * @param        $rules
+     * @param mixed  $rules
      * @param string $key
      * @param string $group
      */
@@ -76,7 +81,7 @@ class RulesCollection
      */
     private function setRules($rules)
     {
-        if ($rules instanceof AllOf) {
+        if ($rules instanceof AbstractComposite) {
             $this->rules = $rules;
 
             return $this;
@@ -87,30 +92,49 @@ class RulesCollection
                 sprintf(
                     'For %s key use only Respect Validation rules or an array with options: %s.',
                     $this->getKey(),
-                    implode(', ', self::OPTIONS)
+                    implode(', ', self::CONFIG)
                 )
             );
         }
-
-        $this->setArrayRules($rules);
+        $this->setRulesConfig($rules);
 
         $this->checkRules();
 
         return $this;
     }
 
-    /**
-     * @param array $rules
-     */
-    private function setArrayRules(array $rules)
-    {
-        $rules = $this->mergeWithDefaultRules($rules);
 
-        foreach ($rules as $key => $value) {
-            if (\in_array($key, self::OPTIONS, true) && !empty($value)) {
-                $this->$key = $value;
+    /**
+     *
+     * @param array $rulesConfig
+     *
+     * @return void
+     */
+    private function setRulesConfig(array $rulesConfig)
+    {
+        $rulesConfig = $this->mergeWithDefaultRules($rulesConfig);
+
+        foreach ($rulesConfig as $configType => $configValue) {
+            if (\in_array($configType, self::CONFIG, true) && !empty($configValue)) {
+                $this->setRulesConfigType($configType, $configValue);
             }
         }
+    }
+
+    /**
+     * Sets config in current rulles collection
+     *
+     * @param string $configType
+     * @param mixed  $configValue
+     */
+    private function setRulesConfigType(string $configType, $configValue)
+    {
+        if ($configType == self::RULES_CONFIG) {
+            $this->$configType = new AllOf($configValue);
+            return;
+        }
+
+        $this->$configType = $configValue;
     }
 
     /**
@@ -121,15 +145,15 @@ class RulesCollection
     private function mergeWithDefaultRules(array $rules): array
     {
         $resolver = new OptionsResolver();
-        $resolver->setRequired('rules');
+        $resolver->setRequired(self::RULES_CONFIG);
         $resolver->setDefaults(
             [
-                'messages' => [],
-                'group' => '',
+                self::MESSAGES_CONFIG => [],
+                self::GROUP_CONFIG => '',
             ]
         );
-        $resolver->setAllowedTypes('messages', 'array');
-        $resolver->setAllowedTypes('group', 'string');
+        $resolver->setAllowedTypes(self::MESSAGES_CONFIG, 'array');
+        $resolver->setAllowedTypes(self::GROUP_CONFIG, 'string');
 
         return $resolver->resolve($rules);
     }
@@ -141,7 +165,7 @@ class RulesCollection
      */
     private function checkRules()
     {
-        if (!$this->rules instanceof AllOf) {
+        if (!$this->rules instanceof AbstractComposite) {
             throw new \InvalidArgumentException(
                 sprintf(
                     'Validation rules are missing or invalid on `%s` key. Use only Respect Validation rules.',

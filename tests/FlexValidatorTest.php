@@ -377,7 +377,59 @@ class FlexValidatorTest extends TestCase
         $this->assertArrayHasKey('notBlank', $this->validator->getErrors('global.contact.phone'));
     }
 
+
     /**
+     * Tests the case when abstract composite rule is used, for example: "OneOf" which is using a group of rules
+     *
+     * @test
+     * @return void
+     */
+    public function validatorUseAbstractComposite()
+    {
+        $rules = [
+            'name' => [
+                'rules' => v::oneOf(v::numeric(), v::length(0, 2)),
+                'messages' => [
+                    'numeric' => 'Test message',
+                    'length' => 'Test message2'
+                ]
+            ],
+            'contact.phone' => v::oneOf(v::numeric())
+        ];
+        $this->validator->useDotErrorKeys();
+        $this->validator->validate($this->getData(), $rules);
+        $this->assertEquals('Test message', $this->validator->getErrors()['name']['numeric']);
+        $this->assertEquals('Test message2', $this->validator->getErrors()['name']['length']);
+        $this->assertEquals('"" must be numeric', $this->validator->getErrors()['contact.phone']['numeric']);
+    }
+
+
+    /**
+     * Tests the case when AbstractWrapper validator is used, for example the "Optional" one
+     *
+     * @test
+     * @return void
+     */
+    public function validatorUseAbstractWrapper()
+    {
+        $rules = [
+            'name' => [
+                'rules' => v::optional(v::numeric()),
+                'messages' => [
+                    'numeric' => 'Test overwrite abstract wrapper message'
+                ]
+            ]
+        ];
+
+        $this->validator->validate($this->getData(), $rules);
+        $this->assertEquals(
+            'Test overwrite abstract wrapper message',
+            $this->validator->getErrors()['name']['numeric']
+        );
+    }
+
+    /**
+     *
      * @return array
      */
     public function getData()

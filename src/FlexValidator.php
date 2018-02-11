@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Iulyanp;
 
+use Respect\Validation\Rules\AbstractComposite;
+use Respect\Validation\Rules\AbstractWrapper;
 use Respect\Validation\Rules\AllOf;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Rules\Optional;
@@ -240,23 +242,24 @@ class FlexValidator
     }
 
     /**
-     * @param AllOf $rules
+     * Returns all rule names which were failed
+     *
+     * @param NestedValidationException $exception
      *
      * @return array
      */
-    private function getRulesNames(AllOf $rules): array
+    private function getFailedRulesNames(NestedValidationException $exception): array
     {
-        $ruleNames = [];
-        foreach ($rules->getRules() as $rule) {
-            if ($rule instanceof Optional) {
-                $ruleNames = $this->getRulesNames($rule->getValidatable());
+        $rulesNames = [];
+        foreach ($exception->getIterator() as $nestedException) {
+            $exceptionId = $nestedException->getId();
+            if (in_array($exceptionId, $rulesNames)) {
+                continue;
             }
+            $rulesNames[] = $exceptionId;
+      }
 
-            $ruleDef = new \ReflectionClass($rule);
-            $ruleNames[] = lcfirst($ruleDef->getShortName());
-        }
-
-        return $ruleNames;
+        return $rulesNames;
     }
 
     /**
@@ -270,9 +273,8 @@ class FlexValidator
         array $globalMessages = []
     ) {
         $errors = [
-            $exception->findMessages($this->getRulesNames($ruleSet->getValidationRules())),
+            $exception->findMessages($this->getFailedRulesNames($exception)),
         ];
-
         if (!empty($this->defaultMessages)) {
             $errors[] = $exception->findMessages($this->defaultMessages);
         }
@@ -360,3 +362,4 @@ class FlexValidator
         array_set($this->errors, $key, $errors);
     }
 }
+
