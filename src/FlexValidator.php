@@ -257,7 +257,7 @@ class FlexValidator
                 continue;
             }
             $rulesNames[] = $exceptionId;
-      }
+        }
 
         return $rulesNames;
     }

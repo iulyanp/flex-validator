@@ -18,7 +18,6 @@ class RulesCollection
     const GROUP_CONFIG = 'group';
     const CONFIG = [self::RULES_CONFIG, self::MESSAGES_CONFIG, self::GROUP_CONFIG];
 
-
     /**
      * RulesCollection constructor.
      *
@@ -103,7 +102,6 @@ class RulesCollection
         return $this;
     }
 
-
     /**
      *
      * @param array $rulesConfig
@@ -131,6 +129,7 @@ class RulesCollection
     {
         if ($configType == self::RULES_CONFIG) {
             $this->$configType = new AllOf($configValue);
+
             return;
         }
 

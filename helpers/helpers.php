@@ -77,56 +77,50 @@ if (!function_exists('value')) {
     }
 }
 
-if ( ! function_exists('array_dot'))
-{
+if (!function_exists('array_dot')) {
     /**
      * Flatten a multi-dimensional associative array with dots.
      *
-     * @param  array   $array
-     * @param  string  $prepend
+     * @param  array  $array
+     * @param  string $prepend
+     *
      * @return array
      */
     function array_dot($array, $prepend = '')
     {
-        $results = array();
-        foreach ($array as $key => $value)
-        {
-            if (is_array($value))
-            {
-                $results = array_merge($results, dot($value, $prepend.$key.'.'));
-            }
-            else
-            {
-                $results[$prepend.$key] = $value;
+        $results = [];
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $results = array_merge($results, dot($value, $prepend . $key . '.'));
+            } else {
+                $results[$prepend . $key] = $value;
             }
         }
+
         return $results;
     }
 }
 
-if ( ! function_exists('dot'))
-{
+if (!function_exists('dot')) {
     /**
      * Flatten a multi-dimensional associative array with dots.
      *
-     * @param  array   $array
-     * @param  string  $prepend
+     * @param  array  $array
+     * @param  string $prepend
+     *
      * @return array
      */
     function dot($array, $prepend = '')
     {
-        $results = array();
-        foreach ($array as $key => $value)
-        {
-            if (is_array($value))
-            {
-                $results = array_merge($results, dot($value, $prepend.$key.'.'));
-            }
-            else
-            {
-                $results[$prepend.$key] = $value;
+        $results = [];
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $results = array_merge($results, dot($value, $prepend . $key . '.'));
+            } else {
+                $results[$prepend . $key] = $value;
             }
         }
+
         return $results;
     }
 }
