@@ -222,11 +222,11 @@ class FlexValidator
     {
         try {
             $ruleSet->getValidationRules()->assert($input);
+
+            $this->setValue($input, $ruleSet->getKey(), $ruleSet->getGroup());
         } catch (NestedValidationException $e) {
             $this->handleValidationException($e, $ruleSet, $globalMessages);
         }
-
-        $this->setValue($input, $ruleSet->getKey(), $ruleSet->getGroup());
     }
 
     /**
