@@ -168,9 +168,9 @@ class FlexValidator
     /**
      * @param string $key
      *
-     * @return string
+     * @return string|null
      */
-    public function getError(string $key): string
+    public function getError(string $key)
     {
         $error = array_get($this->errors, $key);
 
@@ -234,7 +234,7 @@ class FlexValidator
      *
      * @return array
      */
-    private function mergeMessages($errors): array
+    private function mergeMessages(array $errors): array
     {
         $errors = array_filter(array_merge(...$errors));
 
