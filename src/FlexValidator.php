@@ -182,6 +182,22 @@ class FlexValidator
     }
 
     /**
+     * @param                 $input
+     * @param RulesCollection $ruleSet
+     * @param array           $globalMessages
+     */
+    private function validateInput($input, RulesCollection $ruleSet, array $globalMessages = [])
+    {
+        try {
+            $ruleSet->getValidationRules()->assert($input);
+
+            $this->setValue($input, $ruleSet->getKey(), $ruleSet->getGroup());
+        } catch (NestedValidationException $e) {
+            $this->handleValidationException($e, $ruleSet, $globalMessages);
+        }
+    }
+
+    /**
      * @param        $value
      * @param string $key
      * @param string $group
@@ -211,34 +227,6 @@ class FlexValidator
         array_set($this->values, $key, $value);
 
         return $this;
-    }
-
-    /**
-     * @param                 $input
-     * @param RulesCollection $ruleSet
-     * @param array           $globalMessages
-     */
-    private function validateInput($input, RulesCollection $ruleSet, array $globalMessages = [])
-    {
-        try {
-            $ruleSet->getValidationRules()->assert($input);
-
-            $this->setValue($input, $ruleSet->getKey(), $ruleSet->getGroup());
-        } catch (NestedValidationException $e) {
-            $this->handleValidationException($e, $ruleSet, $globalMessages);
-        }
-    }
-
-    /**
-     * @param $errors
-     *
-     * @return array
-     */
-    private function mergeMessages(array $errors): array
-    {
-        $errors = array_filter(array_merge(...$errors));
-
-        return $this->showRulesName ? $errors : array_values($errors);
     }
 
     /**
@@ -287,7 +275,7 @@ class FlexValidator
             $errors[] = $exception->findMessages($ruleSet->getMessages());
         }
 
-        $this->setErrors($this->mergeMessages($errors), $ruleSet->getKey(), $ruleSet->getGroup());
+        $this->setErrors($this->mergeErrorMessages($errors), $ruleSet->getKey(), $ruleSet->getGroup());
     }
 
     /**
@@ -304,6 +292,22 @@ class FlexValidator
         }
 
         $this->setErrorsWithDotKeys($errors, $key, $group);
+    }
+
+    /**
+     * @param $errors
+     *
+     * @return array
+     */
+    private function mergeErrorMessages(array $errors): array
+    {
+        $errors = array_filter($errors, function($item) {
+            return is_array($item);
+        });
+
+        $errors = array_filter(array_merge(...$errors));
+
+        return $this->showRulesName ? $errors : array_values($errors);
     }
 
     /**
