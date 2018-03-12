@@ -70,7 +70,7 @@ class FlexValidatorTest extends TestCase
             ]
         );
 
-        $this->assertEquals('Flex Validator', $validatedValue);
+        $this->assertEquals(null, $validatedValue);
         $this->assertEquals('"Flex Validator" must not contain whitespace', $this->validator->getError('0'));
     }
 
@@ -131,7 +131,7 @@ class FlexValidatorTest extends TestCase
             ]
         );
 
-        $this->assertEquals('Flex Validator', $validatedValue);
+        $this->assertEquals(null, $validatedValue);
         $this->assertEquals('"Flex Validator" must not contain whitespace', $this->validator->getError('0'));
     }
 
@@ -147,7 +147,7 @@ class FlexValidatorTest extends TestCase
         $validatedValues = $this->validator->validate($this->getData(), $rules);
 
         $this->assertFalse($this->validator->isValid());
-        $this->assertArrayHasKey('name', $validatedValues);
+        $this->assertArrayNotHasKey('name', $validatedValues);
     }
 
     /**
